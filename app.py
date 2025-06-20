@@ -12,8 +12,8 @@ st.set_page_config(page_title="Motion visualizer by shinike", layout="wide")
 st.markdown(
     """
     <div style='text-align: center'>
-        <h1>Motion visualizer by shinike</h1>
-        <p><i>精緻な骨格可視化と動作解析を、誰でも簡単に。</i><br>
+        <h1>動画を選択するだけで骨格の可視化と角度表示～無料で出来る動作解析～</h1>
+        <p><i>Motion visualizer by shinike</i><br>
         <small>Posture and motion visualization powered by MediaPipe</small></p>
     </div>
     <hr>
