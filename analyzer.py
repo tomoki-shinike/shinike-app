@@ -1,4 +1,3 @@
-# analyzer.py
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -57,7 +56,6 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
-            # 各関節の左右角度
             sh_l = get_angle_safe(get, 12, 14, 16)
             sh_r = get_angle_safe(get, 11, 13, 15)
             hip_l = get_angle_safe(get, 24, 26, 28)
@@ -66,9 +64,11 @@ def analyze_video(uploaded_file, output_dir):
             knee_r = get_angle_safe(get, 25, 27, 31)
             ankle_l = get_angle_safe(get, 28, 32, 30)
             ankle_r = get_angle_safe(get, 27, 31, 29)
+            trunk = get_angle_safe(get, 11, 23, 25)
 
             angles_data.append([
-                frame_id, sh_l, sh_r, hip_l, hip_r,
+                frame_id, trunk,
+                sh_l, sh_r, hip_l, hip_r,
                 knee_l, knee_r, ankle_l, ankle_r
             ])
 
@@ -85,8 +85,10 @@ def analyze_video(uploaded_file, output_dir):
     skeleton_writer.release()
 
     df = pd.DataFrame(angles_data, columns=[
-        "Frame", "Shoulder_L", "Shoulder_R",
-        "Hip_L", "Hip_R", "Knee_L", "Knee_R",
+        "Frame", "Trunk",
+        "Shoulder_L", "Shoulder_R",
+        "Hip_L", "Hip_R",
+        "Knee_L", "Knee_R",
         "Ankle_L", "Ankle_R"
     ])
     df.to_csv(csv_path, index=False)
