@@ -22,7 +22,6 @@ with st.container():
 st.markdown(
     """
     <div style='text-align: center'>
-        <img src="assets/logo.png" width="180"><br>
         <h1>Motion visualizer by shinike</h1>
         <p><i>精緻な骨格可視化と動作解析を、誰でも簡単に。</i><br>
         <small>Posture and motion visualization powered by MediaPipe</small></p>
