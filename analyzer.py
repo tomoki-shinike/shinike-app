@@ -15,6 +15,13 @@ def calculate_angle(a, b, c):
     )
     return math.degrees(math.acos(min(1.0, max(-1.0, cosine))))
 
+def adjusted_knee_angle(hip, knee, ankle):
+    return 180 - calculate_angle(hip, knee, ankle)
+
+def adjusted_ankle_angle(knee, ankle, toe):
+    angle = calculate_angle(knee, ankle, toe)
+    return 90 - angle if angle <= 90 else -(angle - 90)
+
 def analyze_video(uploaded_file, output_dir):
     temp_input = os.path.join(output_dir, "input_video.mp4")
     with open(temp_input, "wb") as f:
@@ -55,8 +62,8 @@ def analyze_video(uploaded_file, output_dir):
             sh = calculate_angle(get(11), get(13), get(15))
             tr = calculate_angle(get(11), get(23), get(25))
             hip = calculate_angle(get(23), get(25), get(27))
-            knee = calculate_angle(get(25), get(27), get(31))
-            ankle = calculate_angle(get(27), get(31), get(32))
+            knee = adjusted_knee_angle(get(25), get(27), get(31))
+            ankle = adjusted_ankle_angle(get(27), get(31), get(32))
 
             angles_data.append([frame_id, sh, tr, hip, knee, ankle])
 
