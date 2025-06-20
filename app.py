@@ -50,15 +50,6 @@ if uploaded_video:
                 with open(zip_path, "rb") as f:
                     st.download_button("ZIP一括ダウンロード", f, file_name="analysis_results.zip")
 
-# 画像の表示（中央揃え）
-with st.container():
-    try:
-        image = Image.open("アイコン例.png")
-        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-        st.image(image, width=180)
-        st.markdown("</div>", unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.warning("ロゴ画像（アイコン例.png）が見つかりませんでした。")
 
 # 利用上の注意
 with st.expander("📝 利用上の注意 / Terms of Use", expanded=False):
@@ -70,3 +61,13 @@ This tool is for educational and research purposes only.
 Do not use for medical or commercial purposes.  
 Accuracy and fitness of results are not guaranteed.
 """)
+
+# 画像の表示（中央揃え）
+with st.container():
+    try:
+        image = Image.open("アイコン例.png")
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image(image, width=180)
+        st.markdown("</div>", unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("ロゴ画像（アイコン例.png）が見つかりませんでした。")
