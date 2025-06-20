@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image  # 追加
 from analyzer import analyze_video
 from utils import save_graph_image, zip_results
 import tempfile
@@ -6,6 +7,16 @@ import os
 
 # ページ設定
 st.set_page_config(page_title="Motion visualizer by shinike", layout="wide")
+
+# 画像の表示（中央揃え）
+with st.container():
+    try:
+        image = Image.open("アイコン例.png")
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image(image, width=180)
+        st.markdown("</div>", unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("ロゴ画像（アイコン例.png）が見つかりませんでした。")
 
 # ヘッダー
 st.markdown(
