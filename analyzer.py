@@ -1,21 +1,19 @@
-# analyzer.py
-import cv2
-import numpy as np
-import mediapipe as mp
-import pandas as pd
-import os
-import math
-import tempfile
-
-def calculate_angle(a, b, c):
-    ba = [a[i] - b[i] for i in range(3)]
-    bc = [c[i] - b[i] for i in range(3)]
-    cosine = sum(ba[i] * bc[i] for i in range(3)) / (
-        (sum(x * x for x in ba) ** 0.5) * (sum(x * x for x in bc) ** 0.5) + 1e-6
-    )
-    return math.degrees(math.acos(min(1.0, max(-1.0, cosine))))
-
 def analyze_video(uploaded_file, output_dir):
+    import cv2
+    import numpy as np
+    import mediapipe as mp
+    import pandas as pd
+    import os
+    import math
+
+    def calculate_angle(a, b, c):
+        ba = [a[i] - b[i] for i in range(3)]
+        bc = [c[i] - b[i] for i in range(3)]
+        cosine = sum(ba[i] * bc[i] for i in range(3)) / (
+            (sum(x * x for x in ba) ** 0.5) * (sum(x * x for x in bc) ** 0.5) + 1e-6
+        )
+        return math.degrees(math.acos(min(1.0, max(-1.0, cosine))))
+
     temp_input = os.path.join(output_dir, "input_video.mp4")
     with open(temp_input, "wb") as f:
         f.write(uploaded_file.read())
@@ -52,16 +50,29 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
-            sh = calculate_angle(get(11), get(13), get(15))
-            tr = calculate_angle(get(11), get(23), get(25))
-            hip = calculate_angle(get(23), get(25), get(27))
-            knee = calculate_angle(get(25), get(27), get(31))
-            ankle = calculate_angle(get(27), get(31), get(32))
+            # 左側
+            shoulder_l = calculate_angle(get(13), get(11), get(23))
+            hip_l = calculate_angle(get(11), get(23), get(25))
+            knee_l = calculate_angle(get(23), get(25), get(27))
+            ankle_l = calculate_angle(get(25), get(27), get(31))
 
-            angles_data.append([frame_id, sh, tr, hip, knee, ankle])
+            # 右側
+            shoulder_r = calculate_angle(get(14), get(12), get(24))
+            hip_r = calculate_angle(get(12), get(24), get(26))
+            knee_r = calculate_angle(get(24), get(26), get(28))
+            ankle_r = calculate_angle(get(26), get(28), get(32))
+
+            angles_data.append([
+                frame_id,
+                shoulder_l, shoulder_r,
+                hip_l, hip_r,
+                knee_l, knee_r,
+                ankle_l, ankle_r
+            ])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
-            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
+            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks,
+                                   mp.solutions.pose.POSE_CONNECTIONS,
                                    style.get_default_pose_landmarks_style())
 
         annotated_writer.write(frame)
@@ -72,7 +83,13 @@ def analyze_video(uploaded_file, output_dir):
     annotated_writer.release()
     skeleton_writer.release()
 
-    df = pd.DataFrame(angles_data, columns=["Frame", "Shoulder", "Trunk", "Hip", "Knee", "Ankle"])
+    df = pd.DataFrame(angles_data, columns=[
+        "Frame",
+        "Shoulder_L", "Shoulder_R",
+        "Hip_L", "Hip_R",
+        "Knee_L", "Knee_R",
+        "Ankle_L", "Ankle_R"
+    ])
     df.to_csv(csv_path, index=False)
 
     return {
