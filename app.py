@@ -40,7 +40,7 @@ if uploaded_video:
 
                 st.success("✅ 分析完了！以下の結果をご確認ください。")
                 
-                st.video(result["annotated_path"], format="video/mp4")　
+                st.video(result["annotated_path"], format="video/mp4")
                 with open(result["annotated_path"], "rb") as f:
                     st.download_button("📥 注釈付き動画をダウンロード", f, file_name="annotated_video.mp4", mime="video/mp4")
                 st.video(result["skeleton_path"], format="video/mp4")
