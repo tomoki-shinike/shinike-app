@@ -5,7 +5,6 @@ import mediapipe as mp
 import pandas as pd
 import os
 import math
-import tempfile
 
 def calculate_angle(a, b, c):
     ba = [a[i] - b[i] for i in range(3)]
@@ -15,12 +14,11 @@ def calculate_angle(a, b, c):
     )
     return math.degrees(math.acos(min(1.0, max(-1.0, cosine))))
 
-def adjusted_knee_angle(hip, knee, ankle):
-    return 180 - calculate_angle(hip, knee, ankle)
-
-def adjusted_ankle_angle(knee, ankle, toe):
-    angle = calculate_angle(knee, ankle, toe)
-    return 90 - angle if angle <= 90 else -(angle - 90)
+def get_angle_safe(get, a, b, c):
+    try:
+        return calculate_angle(get(a), get(b), get(c))
+    except:
+        return None
 
 def analyze_video(uploaded_file, output_dir):
     temp_input = os.path.join(output_dir, "input_video.mp4")
@@ -59,13 +57,20 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
-            sh = calculate_angle(get(11), get(13), get(15))
-            tr = calculate_angle(get(11), get(23), get(25))
-            hip = calculate_angle(get(23), get(25), get(27))
-            knee = adjusted_knee_angle(get(25), get(27), get(31))
-            ankle = adjusted_ankle_angle(get(27), get(31), get(32))
+            # 各関節の左右角度
+            sh_l = get_angle_safe(get, 12, 14, 16)
+            sh_r = get_angle_safe(get, 11, 13, 15)
+            hip_l = get_angle_safe(get, 24, 26, 28)
+            hip_r = get_angle_safe(get, 23, 25, 27)
+            knee_l = get_angle_safe(get, 26, 28, 32)
+            knee_r = get_angle_safe(get, 25, 27, 31)
+            ankle_l = get_angle_safe(get, 28, 32, 30)
+            ankle_r = get_angle_safe(get, 27, 31, 29)
 
-            angles_data.append([frame_id, sh, tr, hip, knee, ankle])
+            angles_data.append([
+                frame_id, sh_l, sh_r, hip_l, hip_r,
+                knee_l, knee_r, ankle_l, ankle_r
+            ])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
             drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
@@ -79,7 +84,11 @@ def analyze_video(uploaded_file, output_dir):
     annotated_writer.release()
     skeleton_writer.release()
 
-    df = pd.DataFrame(angles_data, columns=["Frame", "Shoulder", "Trunk", "Hip", "Knee", "Ankle"])
+    df = pd.DataFrame(angles_data, columns=[
+        "Frame", "Shoulder_L", "Shoulder_R",
+        "Hip_L", "Hip_R", "Knee_L", "Knee_R",
+        "Ankle_L", "Ankle_R"
+    ])
     df.to_csv(csv_path, index=False)
 
     return {
