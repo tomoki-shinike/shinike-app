@@ -61,13 +61,3 @@ This tool is for educational and research purposes only.
 Do not use for medical or commercial purposes.  
 Accuracy and fitness of results are not guaranteed.
 """)
-
-# 画像の表示（中央揃え）
-with st.container():
-    try:
-        image = Image.open("アイコン例.png")
-        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-        st.image(image, width=180)
-        st.markdown("</div>", unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.warning("ロゴ画像（アイコン例.png）が見つかりませんでした。")
