@@ -7,9 +7,8 @@ def save_graph_image(csv_file, save_path):
     df = pd.read_csv(csv_file)
     plt.figure(figsize=(12, 6))
 
-    # トラッキング対象の関節角度（体幹＋左右の各関節）
+    # 新しい角度列（左右に対応）
     columns_to_plot = [
-        "Trunk",
         "Shoulder_L", "Shoulder_R",
         "Hip_L", "Hip_R",
         "Knee_L", "Knee_R",
