@@ -1,3 +1,4 @@
+# analyzer.py
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -13,12 +14,6 @@ def calculate_angle(a, b, c):
         (sum(x * x for x in ba) ** 0.5) * (sum(x * x for x in bc) ** 0.5) + 1e-6
     )
     return math.degrees(math.acos(min(1.0, max(-1.0, cosine))))
-
-def get_angle_safe(get, a, b, c):
-    try:
-        return calculate_angle(get(a), get(b), get(c))
-    except:
-        return None
 
 def analyze_video(uploaded_file, output_dir):
     temp_input = os.path.join(output_dir, "input_video.mp4")
@@ -57,21 +52,13 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
-            sh_l = get_angle_safe(get, 12, 14, 16)
-            sh_r = get_angle_safe(get, 11, 13, 15)
-            hip_l = get_angle_safe(get, 24, 26, 28)
-            hip_r = get_angle_safe(get, 23, 25, 27)
-            knee_l = get_angle_safe(get, 26, 28, 32)
-            knee_r = get_angle_safe(get, 25, 27, 31)
-            ankle_l = get_angle_safe(get, 28, 32, 30)
-            ankle_r = get_angle_safe(get, 27, 31, 29)
-            trunk = get_angle_safe(get, 11, 23, 25)
+            sh = calculate_angle(get(11), get(13), get(15))
+            tr = calculate_angle(get(11), get(23), get(25))
+            hip = calculate_angle(get(23), get(25), get(27))
+            knee = calculate_angle(get(25), get(27), get(31))
+            ankle = calculate_angle(get(27), get(31), get(32))
 
-            angles_data.append([
-                frame_id, trunk,
-                sh_l, sh_r, hip_l, hip_r,
-                knee_l, knee_r, ankle_l, ankle_r
-            ])
+            angles_data.append([frame_id, sh, tr, hip, knee, ankle])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
             drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
@@ -85,13 +72,7 @@ def analyze_video(uploaded_file, output_dir):
     annotated_writer.release()
     skeleton_writer.release()
 
-    df = pd.DataFrame(angles_data, columns=[
-        "Frame", "Trunk",
-        "Shoulder_L", "Shoulder_R",
-        "Hip_L", "Hip_R",
-        "Knee_L", "Knee_R",
-        "Ankle_L", "Ankle_R"
-    ])
+    df = pd.DataFrame(angles_data, columns=["Frame", "Shoulder", "Trunk", "Hip", "Knee", "Ankle"])
     df.to_csv(csv_path, index=False)
 
     return {
