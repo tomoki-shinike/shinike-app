@@ -1,4 +1,3 @@
-# utils.py
 import pandas as pd
 import matplotlib.pyplot as plt
 import zipfile
@@ -7,8 +6,19 @@ import os
 def save_graph_image(csv_file, save_path):
     df = pd.read_csv(csv_file)
     plt.figure(figsize=(12, 6))
-    for col in ['Shoulder', 'Trunk', 'Hip', 'Knee', 'Ankle']:
-        plt.plot(df['Frame'], df[col], label=col)
+
+    # 新しい角度列（左右に対応）
+    columns_to_plot = [
+        "Shoulder_L", "Shoulder_R",
+        "Hip_L", "Hip_R",
+        "Knee_L", "Knee_R",
+        "Ankle_L", "Ankle_R"
+    ]
+
+    for col in columns_to_plot:
+        if col in df.columns:
+            plt.plot(df['Frame'], df[col], label=col)
+
     plt.xlabel('Frame')
     plt.ylabel('Angle (°)')
     plt.title('Joint Angles Over Time')
