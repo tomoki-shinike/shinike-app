@@ -15,9 +15,8 @@ st.image("header_visual.png", use_column_width=True)
 # ② ヘッダー文言
 st.markdown("""
 <div style='text-align: center'>
-    <h1>動画を選択するだけで骨格の可視化と角度表示</h1>
-    <p><i>Motion visualizer by shinike</i><br>
-    <small>解析後、ページの一番下からデータがダウンロードできます（撮影対象は1名を推奨）</small></p>
+    <h1>動画を選択して解析</h1>
+    <small>解析後、データを保存できます（撮影対象は1名を推奨）</small></p>
 </div>
 <hr>
 """, unsafe_allow_html=True)
