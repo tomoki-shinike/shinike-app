@@ -36,20 +36,33 @@ if uploaded_video:
 
                 st.success("✅ 分析完了！以下の結果をご確認ください。")
 
-                st.video(result["annotated_path"])
-                with open(result["annotated_path"], "rb") as f:
-                    st.download_button("📥 注釈付き動画をダウンロード", f, "annotated_video.mp4", mime="video/mp4")
+                # 注釈付き動画の表示・ダウンロード
+                st.markdown("### 注釈付き動画")
+                if os.path.exists(result["annotated_path"]):
+                    with open(result["annotated_path"], "rb") as f:
+                        video_data = f.read()
+                        st.video(video_data)
+                        st.download_button("📥 注釈付き動画をダウンロード", video_data, "annotated_video.mp4", mime="video/mp4")
+                else:
+                    st.error("❌ 注釈付き動画が見つかりませんでした。")
 
-                st.video(result["skeleton_path"])
-                with open(result["skeleton_path"], "rb") as f:
-                    st.download_button("📥 骨格動画をダウンロード", f, "skeleton_video.mp4", mime="video/mp4")
+                # 骨格動画の表示・ダウンロード
+                st.markdown("### スティックピクチャー動画")
+                if os.path.exists(result["skeleton_path"]):
+                    with open(result["skeleton_path"], "rb") as f:
+                        skeleton_data = f.read()
+                        st.video(skeleton_data)
+                        st.download_button("📥 骨格動画をダウンロード", skeleton_data, "skeleton_video.mp4", mime="video/mp4")
+                else:
+                    st.error("❌ 骨格動画が見つかりませんでした。")
 
                 st.image(result["graph_path"], caption="関節角度の推移グラフ")
+
                 with open(result["csv_path"], "rb") as f:
-                    st.download_button("CSVをダウンロード", f, "angles.csv")
+                    st.download_button("CSVをダウンロード", f, file_name="angles.csv")
 
                 with open(zip_path, "rb") as f:
-                    st.download_button("ZIP一括ダウンロード", f, "analysis_results.zip")
+                    st.download_button("ZIP一括ダウンロード", f, file_name="analysis_results.zip")
 
 with st.expander("📝 利用上の注意 / Terms of Use", expanded=False):
     st.markdown("""
