@@ -4,6 +4,7 @@ import mediapipe as mp
 import pandas as pd
 import os
 import math
+import time  # ★ここを追加
 
 def analyze_video(uploaded_file, output_dir):
     def calculate_angle(a, b, c):
@@ -55,14 +56,14 @@ def analyze_video(uploaded_file, output_dir):
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
             shoulder_l = calculate_angle(get(13), get(11), get(23))
-            hip_l     = calculate_angle(get(11), get(23), get(25))
-            knee_l    = calculate_angle(get(23), get(25), get(27))
-            ankle_l   = calculate_angle(get(25), get(27), get(31))
+            hip_l      = calculate_angle(get(11), get(23), get(25))
+            knee_l     = calculate_angle(get(23), get(25), get(27))
+            ankle_l    = calculate_angle(get(25), get(27), get(31))
 
             shoulder_r = calculate_angle(get(14), get(12), get(24))
-            hip_r     = calculate_angle(get(12), get(24), get(26))
-            knee_r    = calculate_angle(get(24), get(26), get(28))
-            ankle_r   = calculate_angle(get(26), get(28), get(32))
+            hip_r      = calculate_angle(get(12), get(24), get(26))
+            knee_r     = calculate_angle(get(24), get(26), get(28))
+            ankle_r    = calculate_angle(get(26), get(28), get(32))
 
             angles_data.append([
                 frame_id,
@@ -72,7 +73,6 @@ def analyze_video(uploaded_file, output_dir):
                 ankle_l, ankle_r
             ])
 
-            # ポーズを描画（角度ラベルは描かない）
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
             drawing.draw_landmarks(skeleton_frame, results.pose_landmarks,
                                    mp.solutions.pose.POSE_CONNECTIONS,
@@ -85,6 +85,8 @@ def analyze_video(uploaded_file, output_dir):
     cap.release()
     annotated_writer.release()
     skeleton_writer.release()
+
+    time.sleep(0.5)  # ★書き出し完了を待つ（0.5秒）
 
     df = pd.DataFrame(angles_data, columns=[
         "Frame", "Shoulder_L", "Shoulder_R",
