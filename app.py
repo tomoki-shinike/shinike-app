@@ -6,22 +6,22 @@ import tempfile
 import os
 from io import BytesIO
 
-# ページ設定
 st.set_page_config(page_title="Motion visualizer by shinike", layout="wide")
 
-# ① 最上部に画像を表示（レスポンシブ対応）
-st.image("header_visual.png", use_column_width=True)
-
-# ② ヘッダー文言
+# ① ヘッダー部分のテキスト（画像はこの直後に表示）
 st.markdown("""
 <div style='text-align: center'>
-    <h1>動画を選択して解析</h1>
-    <small>解析後、データを保存できます（撮影対象は1名を推奨）</small></p>
+    <h1>動画を選択するだけで骨格の可視化と角度表示</h1>
+    <p><i>Motion visualizer by shinike</i><br>
+    <small>解析後、ページの一番下からデータがダウンロードできます（撮影対象は1名を推奨）</small></p>
 </div>
 <hr>
 """, unsafe_allow_html=True)
 
-# ③ ファイルアップロード
+# ② タイトルのすぐ下に画像を挿入（横幅に合わせて拡大縮小）
+st.image("header_visual.png", use_column_width=True)
+
+# ③ アップロードと分析処理
 uploaded_video = st.file_uploader("動画ファイルを選択してください（.mp4 または .mov）", type=["mp4", "mov"])
 
 if uploaded_video:
