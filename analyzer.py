@@ -4,7 +4,6 @@ import mediapipe as mp
 import pandas as pd
 import os
 import math
-import time  # ★ここを追加
 
 def analyze_video(uploaded_file, output_dir):
     def calculate_angle(a, b, c):
@@ -33,9 +32,8 @@ def analyze_video(uploaded_file, output_dir):
     csv_path = os.path.join(output_dir, "angles.csv")
     graph_path = os.path.join(output_dir, "angles_graph.png")
 
-    codec = cv2.VideoWriter_fourcc(*'avc1')
-    annotated_writer = cv2.VideoWriter(annotated_path, codec, fps, (width, height))
-    skeleton_writer = cv2.VideoWriter(skeleton_path, codec, fps, (width, height))
+    annotated_writer = cv2.VideoWriter(annotated_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+    skeleton_writer = cv2.VideoWriter(skeleton_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
     pose = mp.solutions.pose.Pose(static_image_mode=False)
     drawing = mp.solutions.drawing_utils
@@ -43,6 +41,16 @@ def analyze_video(uploaded_file, output_dir):
 
     angles_data = []
     frame_id = 0
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.4
+    font_color = (255, 255, 255)
+    thickness = 1
+
+    def draw_text(frame, text, landmark_id, lm):
+        coord = lm[landmark_id]
+        x, y = int(coord.x * width), int(coord.y * height)
+        cv2.putText(frame, text, (x, y), font, font_scale, font_color, thickness)
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -55,15 +63,16 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
+            # 左右の角度
             shoulder_l = calculate_angle(get(13), get(11), get(23))
-            hip_l      = calculate_angle(get(11), get(23), get(25))
-            knee_l     = calculate_angle(get(23), get(25), get(27))
-            ankle_l    = calculate_angle(get(25), get(27), get(31))
+            hip_l     = calculate_angle(get(11), get(23), get(25))
+            knee_l    = calculate_angle(get(23), get(25), get(27))
+            ankle_l   = calculate_angle(get(25), get(27), get(31))
 
             shoulder_r = calculate_angle(get(14), get(12), get(24))
-            hip_r      = calculate_angle(get(12), get(24), get(26))
-            knee_r     = calculate_angle(get(24), get(26), get(28))
-            ankle_r    = calculate_angle(get(26), get(28), get(32))
+            hip_r     = calculate_angle(get(12), get(24), get(26))
+            knee_r    = calculate_angle(get(24), get(26), get(28))
+            ankle_r   = calculate_angle(get(26), get(28), get(32))
 
             angles_data.append([
                 frame_id,
@@ -74,9 +83,17 @@ def analyze_video(uploaded_file, output_dir):
             ])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
-            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks,
-                                   mp.solutions.pose.POSE_CONNECTIONS,
+            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
                                    style.get_default_pose_landmarks_style())
+
+            draw_text(skeleton_frame, f"{int(shoulder_l)}°", 11, lm)
+            draw_text(skeleton_frame, f"{int(shoulder_r)}°", 12, lm)
+            draw_text(skeleton_frame, f"{int(hip_l)}°", 23, lm)
+            draw_text(skeleton_frame, f"{int(hip_r)}°", 24, lm)
+            draw_text(skeleton_frame, f"{int(knee_l)}°", 25, lm)
+            draw_text(skeleton_frame, f"{int(knee_r)}°", 26, lm)
+            draw_text(skeleton_frame, f"{int(ankle_l)}°", 27, lm)
+            draw_text(skeleton_frame, f"{int(ankle_r)}°", 28, lm)
 
         annotated_writer.write(frame)
         skeleton_writer.write(skeleton_frame)
@@ -86,12 +103,8 @@ def analyze_video(uploaded_file, output_dir):
     annotated_writer.release()
     skeleton_writer.release()
 
-    time.sleep(0.5)  # ★書き出し完了を待つ（0.5秒）
-
     df = pd.DataFrame(angles_data, columns=[
-        "Frame", "Shoulder_L", "Shoulder_R",
-        "Hip_L", "Hip_R", "Knee_L", "Knee_R",
-        "Ankle_L", "Ankle_R"
+        "Frame", "Shoulder_L", "Shoulder_R", "Hip_L", "Hip_R", "Knee_L", "Knee_R", "Ankle_L", "Ankle_R"
     ])
     df.to_csv(csv_path, index=False)
 
