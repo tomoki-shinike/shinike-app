@@ -77,7 +77,7 @@ with st.expander("📝 利用上の注意 / Terms of Use", expanded=False):
     st.markdown("""
 - 本ツールは教育・研究目的で提供されています。医療目的や商用利用は行わないでください。  
 - 分析結果の正確性や適合性は保証されません。参考情報としてご活用ください。  
-- 使用しているツールの関係上、角度は各ランドマークが成す角を表記しています。  
+- 使用しているツールの関係上、角度は各ランドマークが成す角を表記していますが、日本整形外科学会によるものと異なりますのでご了承ください。  
 
 This tool is for educational and research purposes only.  
 Do not use for medical or commercial purposes.  
