@@ -1,11 +1,11 @@
-def analyze_video(uploaded_file, output_dir):
-    import cv2
-    import numpy as np
-    import mediapipe as mp
-    import pandas as pd
-    import os
-    import math
+import cv2
+import numpy as np
+import mediapipe as mp
+import pandas as pd
+import os
+import math
 
+def analyze_video(uploaded_file, output_dir):
     def calculate_angle(a, b, c):
         ba = [a[i] - b[i] for i in range(3)]
         bc = [c[i] - b[i] for i in range(3)]
@@ -17,8 +17,13 @@ def analyze_video(uploaded_file, output_dir):
     temp_input = os.path.join(output_dir, "input_video.mp4")
     with open(temp_input, "wb") as f:
         f.write(uploaded_file.read())
+        f.flush()
+        os.fsync(f.fileno())
 
     cap = cv2.VideoCapture(temp_input)
+    if not cap.isOpened():
+        raise RuntimeError("❌ 動画ファイルの読み込みに失敗しました。")
+
     width, height = int(cap.get(3)), int(cap.get(4))
     fps = cap.get(cv2.CAP_PROP_FPS)
 
@@ -27,10 +32,8 @@ def analyze_video(uploaded_file, output_dir):
     csv_path = os.path.join(output_dir, "angles.csv")
     graph_path = os.path.join(output_dir, "angles_graph.png")
 
-    annotated_writer = cv2.VideoWriter(
-        annotated_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
-    skeleton_writer = cv2.VideoWriter(
-        skeleton_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+    annotated_writer = cv2.VideoWriter(annotated_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+    skeleton_writer = cv2.VideoWriter(skeleton_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
     pose = mp.solutions.pose.Pose(static_image_mode=False)
     drawing = mp.solutions.drawing_utils
@@ -39,10 +42,9 @@ def analyze_video(uploaded_file, output_dir):
     angles_data = []
     frame_id = 0
 
-    # テキスト描画の設定
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.4
-    font_color = (255, 255, 255)  # 白
+    font_color = (255, 255, 255)
     thickness = 1
 
     def draw_text(frame, text, landmark_id, lm):
@@ -61,17 +63,16 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
-            # 左側
+            # 左右の角度
             shoulder_l = calculate_angle(get(13), get(11), get(23))
-            hip_l = calculate_angle(get(11), get(23), get(25))
-            knee_l = calculate_angle(get(23), get(25), get(27))
-            ankle_l = calculate_angle(get(25), get(27), get(31))
+            hip_l     = calculate_angle(get(11), get(23), get(25))
+            knee_l    = calculate_angle(get(23), get(25), get(27))
+            ankle_l   = calculate_angle(get(25), get(27), get(31))
 
-            # 右側
             shoulder_r = calculate_angle(get(14), get(12), get(24))
-            hip_r = calculate_angle(get(12), get(24), get(26))
-            knee_r = calculate_angle(get(24), get(26), get(28))
-            ankle_r = calculate_angle(get(26), get(28), get(32))
+            hip_r     = calculate_angle(get(12), get(24), get(26))
+            knee_r    = calculate_angle(get(24), get(26), get(28))
+            ankle_r   = calculate_angle(get(26), get(28), get(32))
 
             angles_data.append([
                 frame_id,
@@ -82,11 +83,9 @@ def analyze_video(uploaded_file, output_dir):
             ])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
-            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks,
-                                   mp.solutions.pose.POSE_CONNECTIONS,
+            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
                                    style.get_default_pose_landmarks_style())
 
-            # 角度をスケルトン動画に描画
             draw_text(skeleton_frame, f"{int(shoulder_l)}°", 11, lm)
             draw_text(skeleton_frame, f"{int(shoulder_r)}°", 12, lm)
             draw_text(skeleton_frame, f"{int(hip_l)}°", 23, lm)
@@ -105,11 +104,7 @@ def analyze_video(uploaded_file, output_dir):
     skeleton_writer.release()
 
     df = pd.DataFrame(angles_data, columns=[
-        "Frame",
-        "Shoulder_L", "Shoulder_R",
-        "Hip_L", "Hip_R",
-        "Knee_L", "Knee_R",
-        "Ankle_L", "Ankle_R"
+        "Frame", "Shoulder_L", "Shoulder_R", "Hip_L", "Hip_R", "Knee_L", "Knee_R", "Ankle_L", "Ankle_R"
     ])
     df.to_csv(csv_path, index=False)
 
