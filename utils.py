@@ -7,7 +7,6 @@ def save_graph_image(csv_file, save_path):
     df = pd.read_csv(csv_file)
     plt.figure(figsize=(12, 6))
 
-    # 新しい角度列（左右に対応）
     columns_to_plot = [
         "Shoulder_L", "Shoulder_R",
         "Hip_L", "Hip_R",
@@ -31,5 +30,6 @@ def save_graph_image(csv_file, save_path):
 def zip_results(video1_path, video2_path, csv_path, graph_path, zip_path):
     with zipfile.ZipFile(zip_path, 'w') as zipf:
         for file in [video1_path, video2_path, csv_path, graph_path]:
-            zipf.write(file, arcname=os.path.basename(file))
+            if os.path.exists(file):
+                zipf.write(file, arcname=os.path.basename(file))
     return zip_path
