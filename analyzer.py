@@ -43,11 +43,6 @@ def analyze_video(uploaded_file, output_dir):
     angles_data = []
     frame_id = 0
 
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.6
-    font_color = (255, 255, 255)
-    thickness = 1
-
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -77,31 +72,11 @@ def analyze_video(uploaded_file, output_dir):
                 ankle_l, ankle_r
             ])
 
+            # ポーズを描画（角度ラベルは描かない）
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
             drawing.draw_landmarks(skeleton_frame, results.pose_landmarks,
                                    mp.solutions.pose.POSE_CONNECTIONS,
                                    style.get_default_pose_landmarks_style())
-
-            # 左上に角度一覧を描画
-            angle_texts = [
-                f"Shoulder L: {int(shoulder_l)}°",
-                f"Shoulder R: {int(shoulder_r)}°",
-                f"Hip L:      {int(hip_l)}°",
-                f"Hip R:      {int(hip_r)}°",
-                f"Knee L:     {int(knee_l)}°",
-                f"Knee R:     {int(knee_r)}°",
-                f"Ankle L:    {int(ankle_l)}°",
-                f"Ankle R:    {int(ankle_r)}°"
-            ]
-
-            text_x = 10
-            text_y_start = 30
-            line_height = 25
-
-            for i, text in enumerate(angle_texts):
-                y = text_y_start + i * line_height
-                cv2.putText(skeleton_frame, text, (text_x, y),
-                            font, font_scale, font_color, thickness, cv2.LINE_AA)
 
         annotated_writer.write(frame)
         skeleton_writer.write(skeleton_frame)
