@@ -86,15 +86,6 @@ def analyze_video(uploaded_file, output_dir):
             drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
                                    style.get_default_pose_landmarks_style())
 
-            draw_text(skeleton_frame, f"{int(shoulder_l)}°", 11, lm)
-            draw_text(skeleton_frame, f"{int(shoulder_r)}°", 12, lm)
-            draw_text(skeleton_frame, f"{int(hip_l)}°", 23, lm)
-            draw_text(skeleton_frame, f"{int(hip_r)}°", 24, lm)
-            draw_text(skeleton_frame, f"{int(knee_l)}°", 25, lm)
-            draw_text(skeleton_frame, f"{int(knee_r)}°", 26, lm)
-            draw_text(skeleton_frame, f"{int(ankle_l)}°", 27, lm)
-            draw_text(skeleton_frame, f"{int(ankle_r)}°", 28, lm)
-
         annotated_writer.write(frame)
         skeleton_writer.write(skeleton_frame)
         frame_id += 1
