@@ -32,10 +32,8 @@ def analyze_video(uploaded_file, output_dir):
     csv_path = os.path.join(output_dir, "angles.csv")
     graph_path = os.path.join(output_dir, "angles_graph.png")
 
-    # 再生互換性の高い 'avc1' コーデックを使用
-    codec = cv2.VideoWriter_fourcc(*'avc1')
-    annotated_writer = cv2.VideoWriter(annotated_path, codec, fps, (width, height))
-    skeleton_writer = cv2.VideoWriter(skeleton_path, codec, fps, (width, height))
+    annotated_writer = cv2.VideoWriter(annotated_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+    skeleton_writer = cv2.VideoWriter(skeleton_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
     pose = mp.solutions.pose.Pose(static_image_mode=False)
     drawing = mp.solutions.drawing_utils
@@ -65,6 +63,7 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
+            # 左右の角度
             shoulder_l = calculate_angle(get(13), get(11), get(23))
             hip_l     = calculate_angle(get(11), get(23), get(25))
             knee_l    = calculate_angle(get(23), get(25), get(27))
@@ -105,9 +104,7 @@ def analyze_video(uploaded_file, output_dir):
     skeleton_writer.release()
 
     df = pd.DataFrame(angles_data, columns=[
-        "Frame", "Shoulder_L", "Shoulder_R",
-        "Hip_L", "Hip_R", "Knee_L", "Knee_R",
-        "Ankle_L", "Ankle_R"
+        "Frame", "Shoulder_L", "Shoulder_R", "Hip_L", "Hip_R", "Knee_L", "Knee_R", "Ankle_L", "Ankle_R"
     ])
     df.to_csv(csv_path, index=False)
 
