@@ -33,9 +33,9 @@ shinike is a web application that uses MediaPipe to analyze posture and joint an
 
 ## ⚠️ 注意事項 / Disclaimer
 
-- 本ツールは教育・研究目的で提供されています  
-- 医療的評価・診断・商用利用は行わないでください  
-- 分析精度・再現性は保証されません  
+- 本ツールは教育・研究目的で提供されています。医療目的や商用利用は行わないでください。  
+- 分析結果の正確性や適合性は保証されません。参考情報としてご活用ください。  
+- 使用しているツールの関係上、角度は各ランドマークが成す角を表記していますが、日本整形外科学会によるものと異なりますのでご了承ください。 
 
 This tool is intended for educational and research purposes only.  
 Do not use it for commercial, diagnostic, or medical purposes.  
