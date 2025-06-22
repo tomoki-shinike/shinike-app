@@ -22,7 +22,7 @@ st.image("header_visual.png", use_column_width=True)
 st.markdown("""
 <div style='text-align: center'>
     <p><i>Motion visualizer by shinike</i><br>
-    <small>解析後、ページの一番下からデータがダウンロードできます（撮影対象は1名を推奨）</small></p>
+    <small>解析後、データが保存できます（撮影対象は1名を推奨）</small></p>
 </div>
 <hr>
 """, unsafe_allow_html=True)
