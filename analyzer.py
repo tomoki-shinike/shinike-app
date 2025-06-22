@@ -32,8 +32,9 @@ def analyze_video(uploaded_file, output_dir):
     csv_path = os.path.join(output_dir, "angles.csv")
     graph_path = os.path.join(output_dir, "angles_graph.png")
 
-    annotated_writer = cv2.VideoWriter(annotated_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
-    skeleton_writer = cv2.VideoWriter(skeleton_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+    codec = cv2.VideoWriter_fourcc(*'avc1')
+    annotated_writer = cv2.VideoWriter(annotated_path, codec, fps, (width, height))
+    skeleton_writer = cv2.VideoWriter(skeleton_path, codec, fps, (width, height))
 
     pose = mp.solutions.pose.Pose(static_image_mode=False)
     drawing = mp.solutions.drawing_utils
@@ -43,14 +44,9 @@ def analyze_video(uploaded_file, output_dir):
     frame_id = 0
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.4
+    font_scale = 0.6
     font_color = (255, 255, 255)
     thickness = 1
-
-    def draw_text(frame, text, landmark_id, lm):
-        coord = lm[landmark_id]
-        x, y = int(coord.x * width), int(coord.y * height)
-        cv2.putText(frame, text, (x, y), font, font_scale, font_color, thickness)
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -63,7 +59,6 @@ def analyze_video(uploaded_file, output_dir):
             lm = results.pose_landmarks.landmark
             get = lambda i: [lm[i].x, lm[i].y, lm[i].z]
 
-            # 左右の角度
             shoulder_l = calculate_angle(get(13), get(11), get(23))
             hip_l     = calculate_angle(get(11), get(23), get(25))
             knee_l    = calculate_angle(get(23), get(25), get(27))
@@ -83,17 +78,30 @@ def analyze_video(uploaded_file, output_dir):
             ])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
-            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS,
+            drawing.draw_landmarks(skeleton_frame, results.pose_landmarks,
+                                   mp.solutions.pose.POSE_CONNECTIONS,
                                    style.get_default_pose_landmarks_style())
 
-            draw_text(skeleton_frame, f"{int(shoulder_l)}°", 11, lm)
-            draw_text(skeleton_frame, f"{int(shoulder_r)}°", 12, lm)
-            draw_text(skeleton_frame, f"{int(hip_l)}°", 23, lm)
-            draw_text(skeleton_frame, f"{int(hip_r)}°", 24, lm)
-            draw_text(skeleton_frame, f"{int(knee_l)}°", 25, lm)
-            draw_text(skeleton_frame, f"{int(knee_r)}°", 26, lm)
-            draw_text(skeleton_frame, f"{int(ankle_l)}°", 27, lm)
-            draw_text(skeleton_frame, f"{int(ankle_r)}°", 28, lm)
+            # 左上に角度一覧を描画
+            angle_texts = [
+                f"Shoulder L: {int(shoulder_l)}°",
+                f"Shoulder R: {int(shoulder_r)}°",
+                f"Hip L:      {int(hip_l)}°",
+                f"Hip R:      {int(hip_r)}°",
+                f"Knee L:     {int(knee_l)}°",
+                f"Knee R:     {int(knee_r)}°",
+                f"Ankle L:    {int(ankle_l)}°",
+                f"Ankle R:    {int(ankle_r)}°"
+            ]
+
+            text_x = 10
+            text_y_start = 30
+            line_height = 25
+
+            for i, text in enumerate(angle_texts):
+                y = text_y_start + i * line_height
+                cv2.putText(skeleton_frame, text, (text_x, y),
+                            font, font_scale, font_color, thickness, cv2.LINE_AA)
 
         annotated_writer.write(frame)
         skeleton_writer.write(skeleton_frame)
@@ -104,7 +112,9 @@ def analyze_video(uploaded_file, output_dir):
     skeleton_writer.release()
 
     df = pd.DataFrame(angles_data, columns=[
-        "Frame", "Shoulder_L", "Shoulder_R", "Hip_L", "Hip_R", "Knee_L", "Knee_R", "Ankle_L", "Ankle_R"
+        "Frame", "Shoulder_L", "Shoulder_R",
+        "Hip_L", "Hip_R", "Knee_L", "Knee_R",
+        "Ankle_L", "Ankle_R"
     ])
     df.to_csv(csv_path, index=False)
 
