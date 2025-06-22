@@ -47,23 +47,23 @@ if uploaded_video:
 
                 st.success("✅ 分析完了！以下の結果をご確認ください。")
 
-                st.markdown("### 注釈付き動画")
+                st.markdown("### 骨格付き動画")
                 if os.path.exists(result["annotated_path"]):
                     with open(result["annotated_path"], "rb") as f:
                         video_data = f.read()
                         st.video(video_data)
-                        st.download_button("📥 注釈付き動画をダウンロード", video_data, "annotated_video.mp4", mime="video/mp4")
+                        st.download_button("📥 骨格付き動画をダウンロード", video_data, "annotated_video.mp4", mime="video/mp4")
                 else:
-                    st.error("❌ 注釈付き動画が見つかりませんでした。")
+                    st.error("❌ 骨格付き動画が見つかりませんでした。")
 
                 st.markdown("### スティックピクチャー動画")
                 if os.path.exists(result["skeleton_path"]):
                     with open(result["skeleton_path"], "rb") as f:
                         skeleton_data = f.read()
                         st.video(skeleton_data)
-                        st.download_button("📥 骨格動画をダウンロード", skeleton_data, "skeleton_video.mp4", mime="video/mp4")
+                        st.download_button("📥 骨格だけの動画をダウンロード", skeleton_data, "skeleton_video.mp4", mime="video/mp4")
                 else:
-                    st.error("❌ 骨格動画が見つかりませんでした。")
+                    st.error("❌ 骨格だけの動画が見つかりませんでした。")
 
                 st.image(result["graph_path"], caption="関節角度の推移グラフ")
 
@@ -77,8 +77,10 @@ with st.expander("📝 利用上の注意 / Terms of Use", expanded=False):
     st.markdown("""
 - 本ツールは教育・研究目的で提供されています。医療目的や商用利用は行わないでください。  
 - 分析結果の正確性や適合性は保証されません。参考情報としてご活用ください。  
+- 使用しているツールの関係上、角度は各ランドマークが成す角を表記しています。  
 
 This tool is for educational and research purposes only.  
 Do not use for medical or commercial purposes.  
 Accuracy and fitness of results are not guaranteed.
+Due to the nature of the tools used, the angles represent those formed by specific landmarks.
 """)
