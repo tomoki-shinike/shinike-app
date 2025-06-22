@@ -8,20 +8,26 @@ from io import BytesIO
 
 st.set_page_config(page_title="Motion visualizer by shinike", layout="wide")
 
-# ① ヘッダー部分のテキスト（画像はこの直後に表示）
+# ① タイトル（画像の直前に表示）
 st.markdown("""
 <div style='text-align: center'>
     <h1>動画を選択するだけで骨格の可視化と角度表示</h1>
+</div>
+""", unsafe_allow_html=True)
+
+# ② 画像（主タイトルの下・副タイトルの上）
+st.image("header_visual.png", use_column_width=True)
+
+# ③ サブタイトル・説明文
+st.markdown("""
+<div style='text-align: center'>
     <p><i>Motion visualizer by shinike</i><br>
     <small>解析後、ページの一番下からデータがダウンロードできます（撮影対象は1名を推奨）</small></p>
 </div>
 <hr>
 """, unsafe_allow_html=True)
 
-# ② タイトルのすぐ下に画像を挿入（横幅に合わせて拡大縮小）
-st.image("header_visual.png", use_column_width=True)
-
-# ③ アップロードと分析処理
+# ④ ファイルアップロード
 uploaded_video = st.file_uploader("動画ファイルを選択してください（.mp4 または .mov）", type=["mp4", "mov"])
 
 if uploaded_video:
@@ -41,7 +47,6 @@ if uploaded_video:
 
                 st.success("✅ 分析完了！以下の結果をご確認ください。")
 
-                # 注釈付き動画
                 st.markdown("### 注釈付き動画")
                 if os.path.exists(result["annotated_path"]):
                     with open(result["annotated_path"], "rb") as f:
@@ -51,7 +56,6 @@ if uploaded_video:
                 else:
                     st.error("❌ 注釈付き動画が見つかりませんでした。")
 
-                # スティックピクチャー動画
                 st.markdown("### スティックピクチャー動画")
                 if os.path.exists(result["skeleton_path"]):
                     with open(result["skeleton_path"], "rb") as f:
@@ -61,7 +65,6 @@ if uploaded_video:
                 else:
                     st.error("❌ 骨格動画が見つかりませんでした。")
 
-                # グラフとCSV
                 st.image(result["graph_path"], caption="関節角度の推移グラフ")
 
                 with open(result["csv_path"], "rb") as f:
@@ -70,7 +73,6 @@ if uploaded_video:
                 with open(zip_path, "rb") as f:
                     st.download_button("ZIP一括ダウンロード", f, file_name="analysis_results.zip")
 
-# 注意書き
 with st.expander("📝 利用上の注意 / Terms of Use", expanded=False):
     st.markdown("""
 - 本ツールは教育・研究目的で提供されています。医療目的や商用利用は行わないでください。  
