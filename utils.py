@@ -11,7 +11,8 @@ def save_graph_image(csv_file, save_path):
         "Shoulder_L", "Shoulder_R",
         "Hip_L", "Hip_R",
         "Knee_L", "Knee_R",
-        "Ankle_L", "Ankle_R"
+        "Ankle_L", "Ankle_R",
+        "Trunk_Angle"  # 体幹角度を追加！
     ]
 
     for col in columns_to_plot:
