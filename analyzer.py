@@ -14,6 +14,12 @@ def analyze_video(uploaded_file, output_dir):
         )
         return math.degrees(math.acos(min(1.0, max(-1.0, cosine))))
 
+    def calculate_trunk_angle(shoulder_center, hip_center):
+        vertical = [0, -1, 0]
+        # create pseudo point aligned with hip_center in the vertical direction
+        pseudo = [hip_center[0], hip_center[1] - 1.0, hip_center[2]]
+        return calculate_angle(pseudo, hip_center, shoulder_center)
+
     temp_input = os.path.join(output_dir, "input_video.mp4")
     with open(temp_input, "wb") as f:
         f.write(uploaded_file.read())
@@ -74,12 +80,18 @@ def analyze_video(uploaded_file, output_dir):
             knee_r    = calculate_angle(get(24), get(26), get(28))
             ankle_r   = calculate_angle(get(26), get(28), get(32))
 
+            # 体幹角度の計算
+            shoulder_center = [(get(11)[i] + get(12)[i]) / 2 for i in range(3)]
+            hip_center = [(get(23)[i] + get(24)[i]) / 2 for i in range(3)]
+            trunk_angle = calculate_trunk_angle(shoulder_center, hip_center)
+
             angles_data.append([
                 frame_id,
                 shoulder_l, shoulder_r,
                 hip_l, hip_r,
                 knee_l, knee_r,
-                ankle_l, ankle_r
+                ankle_l, ankle_r,
+                trunk_angle
             ])
 
             drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
@@ -95,7 +107,8 @@ def analyze_video(uploaded_file, output_dir):
     skeleton_writer.release()
 
     df = pd.DataFrame(angles_data, columns=[
-        "Frame", "Shoulder_L", "Shoulder_R", "Hip_L", "Hip_R", "Knee_L", "Knee_R", "Ankle_L", "Ankle_R"
+        "Frame", "Shoulder_L", "Shoulder_R", "Hip_L", "Hip_R",
+        "Knee_L", "Knee_R", "Ankle_L", "Ankle_R", "Trunk_Angle"
     ])
     df.to_csv(csv_path, index=False)
 
